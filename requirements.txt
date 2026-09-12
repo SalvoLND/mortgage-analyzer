@@ -9,3 +9,7 @@ plotly==5.18.0
 # 0.3.4 declares streamlit>=0.87.0 / pandas>=1.2 — no conflict with the bump above.
 streamlit-aggrid==0.3.4
 requests>=2.31.0
+# Imported directly by app_ai.py (`import numpy as np`). pandas already pulls
+# numpy in, but declare it explicitly so the import can't break on a future
+# pandas that vendors or drops it.
+numpy>=1.24.2
