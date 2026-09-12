@@ -288,36 +288,46 @@ with st.sidebar:
     property_value = st.number_input(
         "Property Value",
         min_value=0,
-        value=300000,
+        value=None,
         step=10000,
-        format="%d"
+        format="%d",
+        placeholder="e.g. 300000",
     )
 
     down_payment = st.number_input(
         "Down Payment",
         min_value=0,
-        value=60000,
+        value=None,
         step=1000,
-        format="%d"
+        format="%d",
+        placeholder="e.g. 60000",
     )
 
-    loan_amount = property_value - down_payment
-    st.metric("Loan Amount", f"${loan_amount:,.2f}")
+    # Both figures are None until the user fills them in, so the metric shows a
+    # placeholder rather than attempting the subtraction.
+    if property_value is None or down_payment is None:
+        loan_amount = None
+        st.metric("Loan Amount", "—")
+    else:
+        loan_amount = property_value - down_payment
+        st.metric("Loan Amount", f"${loan_amount:,.2f}")
 
     interest_rate = st.number_input(
         "Annual Interest Rate (%)",
         min_value=0.0,
-        value=5.0,
+        value=None,
         step=0.01,
-        format="%.2f"
+        format="%.2f",
+        placeholder="e.g. 5.00",
     )
 
     loan_term = st.number_input(
         "Loan Term (Years)",
         min_value=1,
-        value=30,
+        value=None,
         step=1,
-        format="%d"
+        format="%d",
+        placeholder="e.g. 30",
     )
 
     # ----------------------------- AI controls -----------------------------
@@ -435,6 +445,23 @@ with st.sidebar:
 
 # Main content area
 st.title("🏦 Mortgage Analyzer bla bla bla")
+
+# The sidebar inputs start empty (value=None) so the app opens as a blank slate
+# rather than showing numbers the user never entered. Every tab below divides by
+# or iterates over these figures, so stop the script until all four are present.
+_required = {
+    "Property Value": property_value,
+    "Down Payment": down_payment,
+    "Annual Interest Rate (%)": interest_rate,
+    "Loan Term (Years)": loan_term,
+}
+_missing = [label for label, value in _required.items() if value is None]
+if _missing:
+    st.info(
+        "👈 Enter your mortgage details in the sidebar to get started.\n\n"
+        "Still needed: " + ", ".join(f"**{label}**" for label in _missing)
+    )
+    st.stop()
 
 # Create tabs
 tab1, tab2, tab3, tab4, tab5 = st.tabs([

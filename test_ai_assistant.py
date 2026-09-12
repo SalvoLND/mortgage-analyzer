@@ -1240,13 +1240,59 @@ class TestStreamlitApp(unittest.TestCase):
         patcher = mock.patch.dict(os.environ, overrides)
         patcher.start()
         self.addCleanup(patcher.stop)
-        return AppTest.from_file(self.APP, default_timeout=120)
+        at = AppTest.from_file(self.APP, default_timeout=120)
+        return self.fill_sidebar(at)
+
+    # The sidebar figures default to blank (value=None) and app_ai.py calls
+    # st.stop() until all four are supplied, so no tab exists to assert against
+    # until the app is primed with a scenario.
+    SCENARIO = {
+        "Property Value": 300000,
+        "Down Payment": 60000,
+        "Annual Interest Rate (%)": 5.0,
+        "Loan Term (Years)": 30,
+    }
+
+    def fill_sidebar(self, at, **overrides):
+        values = dict(self.SCENARIO, **overrides)
+        at.run()
+        for widget in at.number_input:
+            if widget.label in values:
+                widget.set_value(values[widget.label])
+        at.run()
+        return at
 
     def assertClean(self, at):
         self.assertEqual(
             list(at.exception), [],
             "app_ai.py raised: " + "; ".join(str(e.value) for e in at.exception),
         )
+        self.assertEqual([tab.label for tab in at.tabs], EXPECTED_TABS)
+
+    def test_starts_blank_and_waits_for_input(self):
+        """A fresh launch shows no tabs, no exception, and a prompt naming what is missing."""
+        from streamlit.testing.v1 import AppTest
+
+        at = AppTest.from_file(self.APP, default_timeout=120)
+        at.run()
+
+        self.assertEqual(
+            list(at.exception), [],
+            "blank launch raised: " + "; ".join(str(e.value) for e in at.exception),
+        )
+        self.assertEqual([tab.label for tab in at.tabs], [],
+                         "no tab should render until the sidebar is filled in")
+        self.assertTrue(
+            any(w.value is None for w in at.number_input),
+            "sidebar inputs should start empty",
+        )
+        prompt = " ".join(info.value for info in at.info)
+        for label in self.SCENARIO:
+            self.assertIn(label, prompt, f"prompt should name the missing {label!r}")
+
+    def test_filling_the_sidebar_reveals_the_app(self):
+        """Once every figure is supplied the full tab set appears."""
+        at = self.build()
         self.assertEqual([tab.label for tab in at.tabs], EXPECTED_TABS)
 
     def test_renders_with_no_api_key(self):
