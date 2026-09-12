@@ -42,7 +42,7 @@ account is empty, and the app will tell you so in plain English.
 ### 1.2 Install
 
 ```bash
-cd /Users/salvatorecremona/ProjectsHub/apps/mortgage_calculator
+cd mortgage-analyzer
 pip install -r requirements.txt
 ```
 
