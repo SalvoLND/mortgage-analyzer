@@ -1,15 +1,16 @@
+# Pins are deliberately loose floors, not exact versions: Streamlit Community
+# Cloud builds on Python 3.14, and exact pins (pandas==2.2.0) have no wheels for
+# it, forcing a from-source build that fails. Floors let the resolver pick the
+# newest release that ships a 3.14 wheel.
+
 # app_ai.py places st.chat_input inside `with tab5:` (an inline/nested position).
-# That placement raises StreamlitAPIException on older releases, so 1.32.0 could
-# never run the AI tab. 1.46.1 is what the code is built and verified against.
+# That placement raises StreamlitAPIException on older releases, so 1.46.1 is the
+# verified floor.
 streamlit>=1.46.1
-pandas==2.2.0
-plotly==5.18.0
-# Imported at module scope by app.py and app_ai.py (from st_aggrid import ...),
-# so it must stay installed even though neither file renders an AgGrid yet.
-# 0.3.4 declares streamlit>=0.87.0 / pandas>=1.2 — no conflict with the bump above.
-streamlit-aggrid==0.3.4
+pandas>=2.2.0
+# Capped below 6.0: plotly 6 is a breaking major and the charts here are written
+# against the 5.x API. 5.x is a pure-Python wheel, so it installs on any Python.
+plotly>=5.18.0,<6
 requests>=2.31.0
-# Imported directly by app_ai.py (`import numpy as np`). pandas already pulls
-# numpy in, but declare it explicitly so the import can't break on a future
-# pandas that vendors or drops it.
+# Imported directly by app_ai.py (`import numpy as np`).
 numpy>=1.24.2

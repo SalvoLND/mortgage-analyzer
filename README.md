@@ -67,7 +67,7 @@ DEEPSEEK_API_KEY = "sk-your-key-here"
 ## Requirements
 
 - Python 3.9+
-- streamlit ≥ 1.46.1, pandas, plotly, streamlit-aggrid, requests
+- streamlit ≥ 1.46.1, pandas, plotly, numpy, requests
 
 See [AI_ASSISTANT_DOCS.md](AI_ASSISTANT_DOCS.md) for the AI assistant's
 architecture, prompt design and error handling.
@@ -75,5 +75,5 @@ architecture, prompt design and error handling.
 ## Tests
 
 ```bash
-python -m unittest test_ai_assistant.py
+python test_ai_assistant.py
 ```

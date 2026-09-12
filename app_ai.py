@@ -15,7 +15,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import date
-from st_aggrid import AgGrid, GridOptionsBuilder
 import numpy as np
 
 # --- Math engine (owned by mortgage_core.py) --------------------------------
