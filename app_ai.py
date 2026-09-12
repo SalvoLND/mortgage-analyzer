@@ -55,7 +55,9 @@ st.set_page_config(
     page_title="Mortgage Analyzer",
     page_icon="💻",
     layout="wide",
-    initial_sidebar_state="expanded"
+    # "auto" keeps the sidebar open on a laptop but collapses it behind the
+    # hamburger on narrow screens, where "expanded" covers the whole viewport.
+    initial_sidebar_state="auto",
 )
 
 # Custom CSS for a more tech-focused theme
@@ -82,6 +84,37 @@ st.markdown("""
         background-color: #1E1E1E;
         padding: 1rem;
         border-radius: 5px;
+    }
+
+    /* --- Phones and small tablets -------------------------------------
+       Streamlit keeps st.columns side by side at every viewport width, so a
+       five-metric row renders as five unreadable slivers on a phone. Below
+       640px let the row wrap and give each column the full width, so columns
+       stack vertically instead. The data-testid hooks are Streamlit
+       internals and may need revisiting after a major Streamlit upgrade. */
+    @media (max-width: 640px) {
+        [data-testid="stHorizontalBlock"] {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        [data-testid="stColumn"] {
+            flex: 1 1 100% !important;
+            min-width: 100% !important;
+        }
+        /* Reclaim the wide desktop gutters for content. */
+        .block-container {
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+            padding-top: 2.5rem !important;
+        }
+        .stMetric {
+            padding: 0.6rem;
+        }
+        /* Tab labels are long ("Early Repayment Simulator"); let them scroll
+           horizontally rather than wrap into an unreadable stack. */
+        [data-testid="stTabs"] [data-baseweb="tab-list"] {
+            overflow-x: auto;
+        }
     }
     </style>
     """, unsafe_allow_html=True)
