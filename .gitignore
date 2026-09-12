@@ -1,0 +1,19 @@
+# Streamlit secrets — never commit real API keys
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Environments
+.venv/
+venv/
+env/
+.env
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
