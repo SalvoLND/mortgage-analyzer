@@ -518,7 +518,7 @@ with st.sidebar:
         )
 
 # Main content area
-st.title("🏦 Mortgage Analyzer bla bla bla")
+st.title("🏦 Mortgage Analyzer")
 
 # The sidebar inputs start empty (value=None) so the app opens as a blank slate
 # rather than showing numbers the user never entered. Every tab below divides by
