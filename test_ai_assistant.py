@@ -1448,6 +1448,56 @@ class TestNoRealNetwork(unittest.TestCase):
             list(client.stream_chat([{"role": "user", "content": "hi"}]))
 
 
+class TestAccessGate(unittest.TestCase):
+    """``APP_PASSWORD`` holds the whole app behind one shared password."""
+
+    APP = os.path.join(APP_DIR, "app_ai.py")
+    PASSWORD = "correct horse battery staple"
+
+    def build(self, password=None):
+        from streamlit.testing.v1 import AppTest
+
+        at = AppTest.from_file(self.APP, default_timeout=120)
+        if password is not None:
+            at.secrets["APP_PASSWORD"] = password
+        return at
+
+    def test_open_when_no_password_is_configured(self):
+        """Local runs and this suite have no secrets.toml, so the gate stays open."""
+        at = self.build()
+        at.run()
+        self.assertEqual(list(at.exception), [])
+        self.assertFalse(
+            any(w.key == "_access_password" for w in at.text_input),
+            "no password box should appear when APP_PASSWORD is unset",
+        )
+
+    def test_blocks_before_the_password_is_entered(self):
+        at = self.build(self.PASSWORD)
+        at.run()
+        self.assertEqual([tab.label for tab in at.tabs], [], "app must not render behind the gate")
+        self.assertTrue(any(w.key == "_access_password" for w in at.text_input))
+        self.assertIn("🔒 Mortgage Analyzer", [t.value for t in at.title])
+
+    def test_rejects_a_wrong_password(self):
+        at = self.build(self.PASSWORD)
+        at.run()
+        at.text_input(key="_access_password").set_value("not it").run()
+        self.assertIn("Incorrect password.", [e.value for e in at.error])
+        self.assertEqual([tab.label for tab in at.tabs], [])
+        self.assertNotIn("_access_granted", at.session_state)
+
+    def test_accepts_the_right_password(self):
+        at = self.build(self.PASSWORD)
+        at.run()
+        at.text_input(key="_access_password").set_value(self.PASSWORD).run()
+        self.assertTrue(at.session_state["_access_granted"])
+        self.assertEqual(list(at.exception), [])
+        self.assertNotIn("🔒 Mortgage Analyzer", [t.value for t in at.title],
+                         "the lock screen must be gone once unlocked")
+        self.assertEqual(list(at.error), [])
+
+
 def _block_network():
     """Replace ``requests.post`` for the whole run so a missed mock fails loudly."""
     import requests

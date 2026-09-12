@@ -49,6 +49,19 @@ DEEPSEEK_API_KEY = "sk-your-key-here"
 
 `.streamlit/secrets.toml` is gitignored — keep it that way.
 
+## Restricting access with a password
+
+Set `APP_PASSWORD` in Streamlit Secrets and the whole app sits behind a shared
+password prompt. Share that word with whoever should get in.
+
+```toml
+APP_PASSWORD = "a-word-you-choose"
+DEEPSEEK_API_KEY = "sk-your-key-here"
+```
+
+If `APP_PASSWORD` is not set, the app is open to anyone with the link — that is
+what keeps local runs and the test suite working without a secrets file.
+
 ## Deploying to Streamlit Community Cloud
 
 1. Push this repository to GitHub.

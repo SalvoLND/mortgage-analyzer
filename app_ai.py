@@ -7,6 +7,7 @@ being defined inline, plus a DeepSeek-powered "Ask AI" tab and sidebar controls.
 ``app.py`` is never imported or modified by this module.
 """
 
+import hmac
 import os
 import time
 
@@ -118,6 +119,46 @@ st.markdown("""
     }
     </style>
     """, unsafe_allow_html=True)
+
+
+# ---------------------------------------------------------------------------
+# Access gate
+# ---------------------------------------------------------------------------
+def _require_password() -> None:
+    """Hold the whole app behind one shared password.
+
+    The password lives in ``st.secrets["APP_PASSWORD"]`` — set in the Streamlit
+    Cloud dashboard, never committed to this repo, which is public.
+
+    When no password is configured the gate stays open. That keeps local runs
+    and the test suite working without a secrets.toml, but it also means a
+    deployment that forgets to set ``APP_PASSWORD`` is publicly reachable.
+    """
+    try:
+        expected = st.secrets["APP_PASSWORD"]
+    except Exception:  # no secrets.toml at all raises on some versions
+        expected = None
+    if not expected or not str(expected).strip():
+        return
+
+    if st.session_state.get("_access_granted"):
+        return
+
+    st.title("🔒 Mortgage Analyzer")
+    st.write("This app is private. Enter the access password to continue.")
+    entered = st.text_input("Password", type="password", key="_access_password")
+    if entered:
+        # compare_digest keeps the check constant-time, so a wrong guess cannot
+        # be narrowed down by how long the comparison takes.
+        if hmac.compare_digest(str(entered), str(expected).strip()):
+            st.session_state["_access_granted"] = True
+            st.rerun()
+        else:
+            st.error("Incorrect password.")
+    st.stop()
+
+
+_require_password()
 
 
 # ---------------------------------------------------------------------------
